@@ -1,0 +1,158 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset = "UTF-8">
+	<meta name="viewport" content= "width=device-width, initial-scale=1.0">
+	<title>color</title>
+	<script src = "http://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script>
+		function main(){
+			var interv = setInterval("getinput()",100);
+		}
+		function hexString(dec) {
+			return (dec+0x100).toString(16).slice(-2);
+		}
+		function getrgb(color,i){
+			return parseInt($(color).val().slice(1+(2*i),3+(2*i)),16);
+		}
+		function arraytohex(array){
+			return hexString(array[0]) + hexString(array[1]) + hexString(array[2]);
+		}
+		function getinput(){
+			
+			var input = $("#input").val()
+			var output = "";
+			var show = "";
+			if (!input.length){
+				$("#showEffect").html("顯示效果");
+				return;
+			}
+			var color1 = [getrgb("#color1",0),getrgb("#color1",1),getrgb("#color1",2)];
+			//console.log(color1);
+			var color2 = [getrgb("#color2",0),getrgb("#color2",1),getrgb("#color2",2)];
+			var color1to2 = [color2[0]-color1[0],color2[1]-color1[1],color2[2]-color1[2]];
+			
+			var savecolor = color1;
+			var saturation = color1[0];
+			var luminance = color1[0];
+			
+			for (var i in color1){
+				if (saturation < color1[i]){
+					saturation = color1[i];
+				}
+				else if (luminance > color1[i]){
+					luminance = color1[i];
+				}
+			}
+			if ($("[name='sele']:checked").val() == "1"){//彩色
+				console.log($("[name='sele']:checked").val());
+			}
+			else {//漸層
+				var count = [];
+				if (input.length > 120){
+					$("#showEffect").html("TOO LONG");
+					$("#output").html("");
+					return;
+				}
+				for (var i = 0 ; i < input.length ; i++){
+					console.log(i);
+					var worldnum = 0;
+					for (var j = 0 ; j < count.length ; j++){
+						worldnum += 8+count[j][0];
+					}
+					if (i < 14){
+						count.push([1]);
+					}
+					else if (worldnum < 128) {
+						var small;
+						var smallid;
+						for (var k in count){
+							if (k == "0"){
+								small = count[0][0];
+								smallid = 0;
+							}
+							else if (small > count[k][0]){
+								small = count[k][0];
+								smallid = k;
+							}
+						}
+						count[smallid][0]++;
+					}
+					else if (worldnum == 128) {
+						i -= count[count.length-1][0] + 1;
+						count.splice(count.length-1,1);
+						console.log("in");
+						console.log(String(count));
+					}
+				}//
+				console.log(String(count));
+				var oneWorldcolor = [parseInt(color1to2[0]/count.length),
+					parseInt(color1to2[1]/count.length),parseInt(color1to2[2]/count.length)];
+				/*
+				for (var i = 0 ; i < input.length ; i++){
+					output += "["+arraytohex(savecolor)+"]" + input[i];
+					show += "<font color='#" + arraytohex(savecolor)  + "'>" + input[i] + "</font>";
+					savecolor = [savecolor[0]+oneWorldcolor[0],
+					savecolor[1] + oneWorldcolor[1],savecolor[2] + oneWorldcolor[2]];
+				}*/
+				var pos = 0;
+				for (var i in count){
+					output += "["+arraytohex(savecolor)+"]";
+					show += "<font color='#" + arraytohex(savecolor)  + "'>";
+					for (var j = 0 ; j < count[i][0] ; j++){
+						output += input[pos];
+						show += input[pos];
+						pos++;
+					}
+					show += "</font>";
+					savecolor = [savecolor[0]+oneWorldcolor[0],
+					savecolor[1] + oneWorldcolor[1],savecolor[2] + oneWorldcolor[2]];
+				}
+			}
+			$("#showEffect").html(show);
+			$("#output").html(output);
+			/*
+			if (r == 255 && b == 0 && g != 0){g--}
+			else if (g == 255 && b == 0 r != 0){r--}
+			else if (r == 0 && g == 255 && b != 255){b++}
+			else if (r == 0 && b == 255 && g != 0){g--}
+			else if (g == 0 && b == 255 && r != 255){r++}
+			else if (r == 255 && g == 0 && b != 0){b--}	
+			
+			for (var i = 0 ; i < output.length ; i++){
+				console.log(output[i]);
+			}*/
+		}
+		function copy(){
+			CopyTextToClipboard("output");
+		}
+		function CopyTextToClipboard(id) {
+			var TextRange = document.createRange();
+			TextRange.selectNode(document.getElementById(id));
+			sel = window.getSelection();
+			sel.removeAllRanges();
+			sel.addRange(TextRange);
+			document.execCommand("copy");
+			sel.removeAllRanges();
+		}
+		function clearText(){
+			$("#input").val("");
+		}
+	</script>
+</head>
+<body style = "text-align : center; background-color : #222222 ; color : #cccccc;" onload = "main()">
+	<p><input type = "color" id = "color1" value = "#ffffff">顏色1</input></p>
+	<p><input type = "color" id = "color2" value = "#ffffff">顏色2</input></p>
+	<p><input type = "radio" name = "sele" value = 0>漸層(顏色1到顏色2)</input></p>
+	<p><input type = "radio" name = "sele" value = 1>彩色(尚未完成)</input></p>
+	<p>(如果選擇彩色上方顏色1開始顏色)</p>
+	<p><input type = "button" onclick = "clearText()" value = "清空文字"></p>
+	<p>輸入</p>
+	<p><input type = "text" id = "input"></input></p>
+	<p>輸出</p>
+	<p id = "showEffect" style = "height : 20px">顯示效果</p>
+	<p><input type = "button" onclick = "copy()" value = "複製到剪貼簿"></p>
+	<div id = "output" style = "color : rgba(255,255,255,1); overflow: hidden ; height : 1px;"></div>
+	
+</body>
+</html>
