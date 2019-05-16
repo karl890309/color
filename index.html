@@ -81,11 +81,12 @@
 				var savecolor = rgbToHsl(color1);
 				var angle = parseInt(savecolor[0]);
 				var avegAngle = 360/count.length;
+				pos = 0;
 				for (var i in count){
 					
 					output += "["+rgbToHex(hslToRgb(savecolor))+"]";
 					show += "<font color='#" + rgbToHex(hslToRgb(savecolor))  + "'>";
-					pos = 0;
+					
 					for (var j = 0 ; j < count[i][0] ; j++){
 						output += input[pos];
 						show += input[pos];
